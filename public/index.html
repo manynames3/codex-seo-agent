@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex SEO Agent</title>
+  <meta name="description" content="A Codex-ready SEO intelligence workflow for Google Search Console gap analysis, competitor research, content planning, and dashboard generation.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f14;
+      --panel: #111821;
+      --panel-2: #17212c;
+      --line: #243241;
+      --text: #eef6fb;
+      --muted: #92a5b4;
+      --blue: #55b8ff;
+      --green: #4dd899;
+      --yellow: #f6c85f;
+      --red: #ff6b6b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 44px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 7px;
+      background: #12314a;
+      color: var(--blue);
+      border: 1px solid #24567a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(77, 216, 153, 0.7);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 28px;
+      padding: 40px 0 28px;
+      align-items: stretch;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      max-width: 780px;
+      font-size: clamp(42px, 7vw, 82px);
+      line-height: 0.94;
+      letter-spacing: 0;
+    }
+
+    .lede {
+      max-width: 700px;
+      color: var(--muted);
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 28px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 112px;
+    }
+
+    .metric span, .eyebrow {
+      display: block;
+      color: var(--muted);
+      font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      font: 600 28px ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .metric small {
+      display: block;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .step {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      min-height: 190px;
+    }
+
+    .step b {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--panel-2);
+      color: var(--blue);
+      margin-bottom: 18px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .step h2 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .terminal {
+      margin-top: 16px;
+      background: #080b0f;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      overflow: auto;
+      color: #cde7f7;
+      font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .pill {
+      flex: none;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #182433;
+      color: var(--blue);
+      font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+      border: 1px solid #284760;
+    }
+
+    footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .hero, .metric-grid, .workflow {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">SEO</div>
+        <span>Codex SEO Agent</span>
+      </div>
+      <div class="status">Static Pages front end</div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Google Search Console workflow</span>
+        <h1>SEO intelligence, packaged for Codex.</h1>
+        <p class="lede">Find gap-zone keywords, inspect who is outranking you, plan this week's articles, and export a dashboard from one Codex-guided workflow.</p>
+      </div>
+      <aside class="panel stack">
+        <div class="row">
+          <span>Project instructions</span>
+          <span class="pill">AGENTS.md</span>
+        </div>
+        <div class="row">
+          <span>Reusable Codex skill</span>
+          <span class="pill">$seo-intelligence</span>
+        </div>
+        <div class="row">
+          <span>Dashboard output</span>
+          <span class="pill">HTML</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="metric-grid" aria-label="Workflow metrics">
+      <div class="metric">
+        <span>Gap Zone</span>
+        <strong>5-20</strong>
+        <small>Positions targeted for quick movement.</small>
+      </div>
+      <div class="metric">
+        <span>Data Window</span>
+        <strong>90d</strong>
+        <small>Search Console query data.</small>
+      </div>
+      <div class="metric">
+        <span>Plan Size</span>
+        <strong>4</strong>
+        <small>Weekly article opportunities.</small>
+      </div>
+      <div class="metric">
+        <span>Deploy Target</span>
+        <strong>Pages</strong>
+        <small>Static Cloudflare front end.</small>
+      </div>
+    </section>
+
+    <section class="workflow" aria-label="SEO workflow">
+      <article class="step">
+        <b>1</b>
+        <h2>Gap analysis</h2>
+        <p>Pull Search Console queries and prioritize keywords ranking in striking distance.</p>
+      </article>
+      <article class="step">
+        <b>2</b>
+        <h2>Competitor intel</h2>
+        <p>Use live SERP data when configured, or run the mock fallback for workflow demos.</p>
+      </article>
+      <article class="step">
+        <b>3</b>
+        <h2>Content plan</h2>
+        <p>Score opportunities against impressions, position, threat level, and brand voice.</p>
+      </article>
+      <article class="step">
+        <b>4</b>
+        <h2>Dashboard</h2>
+        <p>Generate static HTML reports ready for browser review or Pages deployment.</p>
+      </article>
+    </section>
+
+    <section class="panel" style="margin-top: 12px">
+      <span class="eyebrow">Run locally</span>
+      <div class="terminal">python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+cp .env.example .env
+.venv/bin/python scripts/gap_finder.py</div>
+    </section>
+
+    <footer>
+      This deployed page is the static front end. The Google Search Console workflow runs locally in Codex so credentials stay out of the deployed site.
+    </footer>
+  </main>
+</body>
+</html>

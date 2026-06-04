@@ -1,0 +1,4 @@
+interface:
+  display_name: "SEO Intelligence"
+  short_description: "Run SEO gap, competitor, and content workflows"
+  default_prompt: "Use $seo-intelligence to run the weekly SEO workflow for my site."
