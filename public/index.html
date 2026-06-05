@@ -7,17 +7,22 @@
   <meta name="description" content="Find search opportunities and turn them into a prioritized SEO content plan.">
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #0b0f14;
-      --panel: #111821;
-      --panel-2: #17212c;
-      --line: #243241;
-      --text: #eef6fb;
-      --muted: #92a5b4;
-      --blue: #55b8ff;
-      --green: #4dd899;
-      --yellow: #f6c85f;
-      --red: #ff6b6b;
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --ink: #16212f;
+      --muted: #607086;
+      --line: #d9e2ec;
+      --blue: #2367d1;
+      --blue-strong: #174ea6;
+      --green: #11845b;
+      --green-soft: #e7f6ee;
+      --amber: #a86400;
+      --amber-soft: #fff4dd;
+      --red: #c33f3f;
+      --red-soft: #fff0f0;
+      --shadow: 0 16px 44px rgba(28, 43, 65, 0.08);
     }
 
     * { box-sizing: border-box; }
@@ -26,37 +31,68 @@
       margin: 0;
       min-height: 100vh;
       background: var(--bg);
-      color: var(--text);
+      color: var(--ink);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
+      line-height: 1.45;
     }
 
     main {
       width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 28px 0 40px;
-    }
-
-    .topbar, .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
+      padding: 28px 0 48px;
     }
 
     .topbar {
-      padding-bottom: 22px;
-      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
     }
 
-    .brand { font-weight: 750; }
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 5px;
+      font-size: 30px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: 16px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 6px;
+      font-size: 15px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    p, small, label, .muted {
+      color: var(--muted);
+    }
+
+    p { margin-bottom: 0; }
 
     .status {
+      min-width: 124px;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
       color: var(--muted);
-      font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(28, 43, 65, 0.05);
     }
 
     .status::before {
@@ -64,156 +100,263 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--yellow);
-      box-shadow: 0 0 12px rgba(246, 200, 95, 0.65);
+      background: var(--amber);
     }
 
-    .status.ready::before { background: var(--green); box-shadow: 0 0 12px rgba(77, 216, 153, 0.65); }
-    .status.error::before { background: var(--red); box-shadow: 0 0 12px rgba(255, 107, 107, 0.65); }
+    .status.ready::before { background: var(--green); }
+    .status.error::before { background: var(--red); }
 
-    .grid {
+    .trust-strip {
       display: grid;
-      grid-template-columns: 420px minmax(0, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .trust-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 11px 13px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .trust-item strong {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
       gap: 14px;
-      margin-top: 22px;
       align-items: start;
     }
 
     .panel, .card {
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 8px;
+      box-shadow: var(--shadow);
     }
 
     .panel { padding: 18px; }
     .card { padding: 16px; }
 
-    h1 {
-      margin: 0 0 4px;
-      font-size: 24px;
-      letter-spacing: 0;
-    }
-
-    h2 {
-      margin: 0 0 14px;
-      font-size: 15px;
-      letter-spacing: 0;
-    }
-
-    h3 {
-      margin: 0 0 8px;
-      font-size: 14px;
-      letter-spacing: 0;
-    }
-
-    p, small, label, .hint {
-      color: var(--muted);
-    }
+    .field { margin-bottom: 12px; }
 
     label {
       display: block;
-      font-size: 12px;
       margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    input, textarea, button {
+    input, button {
       width: 100%;
-      border-radius: 7px;
+      border-radius: 8px;
       border: 1px solid var(--line);
       font: inherit;
     }
 
-    input, textarea {
-      background: #081018;
-      color: var(--text);
-      padding: 11px 12px;
+    input {
+      height: 48px;
+      background: #fbfdff;
+      color: var(--ink);
+      padding: 0 13px;
       outline: none;
     }
 
-    textarea {
-      min-height: 78px;
-      resize: vertical;
-    }
-
-    input:focus, textarea:focus {
-      border-color: #3f83ad;
-      box-shadow: 0 0 0 3px rgba(85, 184, 255, 0.12);
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(35, 103, 209, 0.12);
     }
 
     button {
+      min-height: 46px;
       cursor: pointer;
-      background: #1b6a9d;
+      background: var(--blue);
       color: white;
-      border-color: #2d8bc7;
-      padding: 11px 13px;
-      font-weight: 700;
+      border-color: var(--blue);
+      padding: 10px 13px;
+      font-weight: 800;
     }
 
+    button:hover { background: var(--blue-strong); }
+
     button.secondary {
-      background: #152232;
-      border-color: #2b4055;
-      color: #d8e9f4;
+      background: #eef4fb;
+      border-color: #c9d8e8;
+      color: #1d3f66;
     }
+
+    button.secondary:hover { background: #e3edf8; }
+
+    button.ghost {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    button.ghost:hover { background: var(--surface-2); }
 
     button:disabled {
       cursor: wait;
-      opacity: 0.65;
+      opacity: 0.66;
     }
 
-    .field {
-      margin-bottom: 13px;
+    .button-stack {
+      display: grid;
+      gap: 9px;
+      margin-top: 12px;
     }
 
-    .actions {
+    .split-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 9px;
+      margin-top: 9px;
     }
 
-    .stacked-actions {
+    .note {
+      border-radius: 8px;
+      background: var(--green-soft);
+      color: #285a45;
+      padding: 11px 12px;
+      font-size: 13px;
+      margin: 14px 0;
+    }
+
+    .step-list {
       display: grid;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 8px;
+      margin-top: 18px;
     }
 
-    .cards {
+    .step {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+      padding: 9px 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .step::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #9aa8ba;
+      background: var(--surface);
+      flex: 0 0 auto;
+    }
+
+    .step.done {
+      color: var(--green);
+      border-color: #bfe7d2;
+      background: #f3fbf7;
+    }
+
+    .step.done::before {
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .step.active {
+      color: var(--blue);
+      border-color: #bad2f4;
+      background: #f2f7ff;
+    }
+
+    .step.active::before {
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .main-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
-    .wide {
-      grid-column: 1 / -1;
+    .wide { grid-column: 1 / -1; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: #eef4fb;
+      color: #1d3f66;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.green {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .badge.amber {
+      background: var(--amber-soft);
+      color: var(--amber);
     }
 
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      margin-bottom: 12px;
     }
 
     .metric {
-      background: #0d141d;
+      background: var(--surface-2);
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 13px;
-      min-height: 94px;
+      padding: 12px;
+      min-height: 92px;
     }
 
     .metric span {
       display: block;
       color: var(--muted);
-      font: 10px ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .metric strong {
       display: block;
-      font: 650 24px ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--ink);
+      font-size: 25px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .next-move {
+      border-left: 4px solid var(--green);
+      background: #f7fcf9;
+      border-radius: 8px;
+      padding: 14px;
     }
 
     .list {
@@ -222,15 +365,48 @@
     }
 
     .item {
-      background: #0d141d;
       border: 1px solid var(--line);
       border-radius: 8px;
+      background: var(--surface-2);
       padding: 13px;
     }
 
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 7px;
+    }
+
     .item p {
-      margin: 6px 0 0;
+      color: var(--muted);
       font-size: 13px;
+      margin-bottom: 0;
+    }
+
+    .item small {
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    .impact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .chip {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .links {
@@ -243,84 +419,125 @@
     a {
       color: var(--blue);
       text-decoration: none;
+      font-weight: 750;
     }
 
     a:hover { text-decoration: underline; }
 
     .link-button {
       display: inline-flex;
-      border: 1px solid #284760;
-      background: #122235;
+      border: 1px solid #c6d8ee;
+      background: #f0f6ff;
       border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
+      padding: 7px 10px;
+      font-size: 13px;
     }
 
-    pre {
-      margin: 0;
-      max-height: 280px;
-      overflow: auto;
-      background: #080b0f;
+    .link-button.disabled {
+      color: var(--muted);
+      background: var(--surface-2);
+      border-color: var(--line);
+      pointer-events: none;
+    }
+
+    .history {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .history-entry {
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 12px;
-      color: #cde7f7;
-      font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
-      white-space: pre-wrap;
-      word-break: break-word;
+      background: var(--surface-2);
+      padding: 10px 11px;
+    }
+
+    .empty {
+      border: 1px dashed #b8c5d4;
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--muted);
+      padding: 13px;
+      font-size: 13px;
     }
 
     @media (max-width: 980px) {
-      .grid, .cards, .metric-grid {
-        grid-template-columns: 1fr;
+      main {
+        width: min(100% - 28px, 640px);
+        padding-top: 22px;
       }
 
-      .topbar, .row {
+      .topbar, .section-head {
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .status { justify-content: flex-start; }
+
+      .trust-strip, .layout, .main-grid, .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .split-actions { grid-template-columns: 1fr; }
+
+      h1 { font-size: 26px; }
     }
   </style>
 </head>
 <body>
   <main>
     <header class="topbar">
-      <div class="brand">
-        <div>
-          <h1>SEO Growth Planner</h1>
-          <small>Find search opportunities and turn them into content priorities</small>
-        </div>
+      <div>
+        <h1>SEO Growth Planner</h1>
+        <p>Prioritized search opportunities, content briefs, and report links from your Search Console data.</p>
       </div>
-      <div id="status" class="status">Ready</div>
+      <div id="status" class="status ready">Example loaded</div>
     </header>
 
-    <section class="grid">
+    <section class="trust-strip" aria-label="Trust summary">
+      <div class="trust-item"><strong>Read-only</strong>Uses Search Console performance data.</div>
+      <div class="trust-item"><strong>Private reports</strong>Generated links expire automatically.</div>
+      <div class="trust-item"><strong>No site changes</strong>Recommendations only. Nothing is published.</div>
+    </section>
+
+    <section class="layout">
       <aside class="panel">
-        <h2>Create SEO Plan</h2>
+        <h2>Create a Plan</h2>
         <div class="field">
           <label for="siteUrl">Website</label>
-          <input id="siteUrl" placeholder="example.com">
+          <input id="siteUrl" autocomplete="url" placeholder="example.com">
         </div>
 
-        <div class="stacked-actions">
-          <button id="connectBtn" class="secondary">Connect Search Console</button>
+        <div class="button-stack">
           <button id="runBtn">Generate Plan</button>
+          <button id="connectBtn" class="secondary">Connect Search Console</button>
+        </div>
+        <div class="split-actions">
+          <button id="demoBtn" class="ghost">View Example</button>
+          <button id="reportsBtn" class="ghost">Saved Reports</button>
         </div>
 
-        <h2 style="margin-top:22px">Reports</h2>
+        <div class="note">Start with the example report, then connect your site when you are ready to generate your own plan.</div>
+
+        <h2>Progress</h2>
+        <div id="steps" class="step-list"></div>
+
+        <h2 style="margin-top:20px">Reports</h2>
         <div id="links" class="links"></div>
       </aside>
 
-      <section class="cards">
-        <div class="panel wide">
-          <div class="row">
+      <section class="main-grid">
+        <div class="card wide">
+          <div class="section-head">
             <div>
               <h2>SEO Snapshot</h2>
-              <small id="runMeta">No plan generated yet.</small>
+              <p id="runMeta">Example report for an ecommerce site.</p>
             </div>
-            <button id="reportsBtn" class="secondary" style="width:auto">View Latest Reports</button>
+            <span id="reportMode" class="badge green">Example</span>
           </div>
-          <div class="metric-grid" style="margin-top:14px">
+          <div class="metric-grid">
             <div class="metric"><span>Impressions</span><strong id="mImpressions">-</strong></div>
             <div class="metric"><span>Opportunities</span><strong id="mGaps">-</strong></div>
             <div class="metric"><span>Avg Position</span><strong id="mPosition">-</strong></div>
@@ -328,24 +545,55 @@
           </div>
         </div>
 
+        <div class="card wide">
+          <div class="section-head">
+            <div>
+              <h2>Recommended Next Move</h2>
+              <p>The highest-impact action from the current plan.</p>
+            </div>
+            <span id="nextBadge" class="badge amber">Priority</span>
+          </div>
+          <div id="nextMove" class="next-move"></div>
+        </div>
+
         <div class="card">
-          <h2>Top Opportunities</h2>
+          <div class="section-head">
+            <div>
+              <h2>Top Opportunities</h2>
+              <p>Queries close enough to win with focused work.</p>
+            </div>
+          </div>
           <div id="keywords" class="list"></div>
         </div>
 
         <div class="card">
-          <h2>Content Plan</h2>
+          <div class="section-head">
+            <div>
+              <h2>Content Plan</h2>
+              <p>Briefs ranked by priority and search intent.</p>
+            </div>
+          </div>
           <div id="contentPlan" class="list"></div>
         </div>
 
         <div class="card wide">
-          <h2>Recent Reports</h2>
+          <div class="section-head">
+            <div>
+              <h2>Saved Reports</h2>
+              <p>Recent generated files for the connected workspace.</p>
+            </div>
+          </div>
           <div id="reports" class="list"></div>
         </div>
 
         <div class="card wide">
-          <h2>Activity</h2>
-          <pre id="log">Ready.</pre>
+          <div class="section-head">
+            <div>
+              <h2>Run History</h2>
+              <p>Recent activity from this browser session.</p>
+            </div>
+          </div>
+          <div id="history" class="history"></div>
         </div>
       </section>
     </section>
@@ -353,11 +601,117 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
+    const steps = [
+      "Connect data",
+      "Analyze queries",
+      "Rank opportunities",
+      "Build content plan"
+    ];
+
+    const demoResult = {
+      ok: true,
+      demo: true,
+      site_url: "sc-domain:example.com",
+      date: new Date().toISOString().slice(0, 10),
+      gap: {
+        kpis: {
+          total_impressions: 18420,
+          gap_zone_count: 43,
+          avg_position: 11.8,
+          total_clicks: 612
+        },
+        keywords: [
+          {
+            keyword: "best compact standing desk",
+            impressions: 4200,
+            position: 8.7,
+            clicks: 92,
+            ctr: 2.2,
+            recommendation: "Rewrite the title around a comparison angle, add a compact-desk comparison table, and link to it from the main buying guide.",
+            impact: "High",
+            effort: "Medium"
+          },
+          {
+            keyword: "ergonomic desk setup small space",
+            impressions: 3100,
+            position: 12.4,
+            clicks: 41,
+            ctr: 1.3,
+            recommendation: "Create a dedicated small-space setup guide with product dimensions, layout examples, and internal links from apartment-office posts.",
+            impact: "High",
+            effort: "Medium"
+          },
+          {
+            keyword: "standing desk cable management",
+            impressions: 1900,
+            position: 15.2,
+            clicks: 19,
+            ctr: 1.0,
+            recommendation: "Add a practical cable-management section with photos, checklist copy, and a short accessory table.",
+            impact: "Medium",
+            effort: "Low"
+          }
+        ]
+      },
+      content_plan: {
+        articles: [
+          {
+            priority: "P1",
+            title: "Best Compact Standing Desks for Small Spaces",
+            keyword: "best compact standing desk",
+            intent: "Commercial Investigation",
+            threat: "MEDIUM",
+            brief: "Lead with a comparison table, then rank options by footprint, stability, cable routing, and price."
+          },
+          {
+            priority: "P1",
+            title: "Ergonomic Desk Setup for a Small Space",
+            keyword: "ergonomic desk setup small space",
+            intent: "How-To",
+            threat: "LOW",
+            brief: "Show three layouts, exact measurements, and a checklist that helps readers choose the right desk size."
+          },
+          {
+            priority: "P2",
+            title: "Standing Desk Cable Management Ideas That Stay Clean",
+            keyword: "standing desk cable management",
+            intent: "Informational",
+            threat: "LOW",
+            brief: "Make it visual and practical: before/after shots, parts list, and routing steps."
+          }
+        ]
+      },
+      links: {}
+    };
+
     const state = {
-      siteUrl: localStorage.getItem("seoAgent.siteUrl") || ""
+      siteUrl: localStorage.getItem("seoAgent.siteUrl") || "",
+      lastResult: readStoredResult(),
+      history: readStoredHistory()
     };
 
     $("siteUrl").value = displaySiteUrl(state.siteUrl);
+
+    function readStoredResult() {
+      try {
+        const raw = localStorage.getItem("seoAgent.lastResult");
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function readStoredHistory() {
+      try {
+        return JSON.parse(localStorage.getItem("seoAgent.history") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function storeHistory() {
+      localStorage.setItem("seoAgent.history", JSON.stringify(state.history.slice(0, 8)));
+    }
 
     function setStatus(text, kind = "") {
       const el = $("status");
@@ -365,10 +719,12 @@
       el.className = `status ${kind}`;
     }
 
-    function log(message, data) {
-      const stamp = new Date().toLocaleTimeString();
-      const details = data ? `\n${JSON.stringify(data, null, 2)}` : "";
-      $("log").textContent = `[${stamp}] ${message}${details}\n\n${$("log").textContent}`;
+    function addHistory(message, kind = "info") {
+      const stamp = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      state.history.unshift({ stamp, message, kind });
+      state.history = state.history.slice(0, 8);
+      storeHistory();
+      renderHistory();
     }
 
     function normalizeSiteUrl(value) {
@@ -380,22 +736,17 @@
     }
 
     function displaySiteUrl(value) {
-      return String(value || "").replace(/^sc-domain:/, "");
+      return String(value || "").replace(/^sc-domain:/, "").replace(/\/$/, "");
     }
 
-    function save(options = {}) {
-      const silent = options.silent === true;
+    function saveSite() {
       state.siteUrl = normalizeSiteUrl($("siteUrl").value);
       localStorage.setItem("seoAgent.siteUrl", state.siteUrl);
       $("siteUrl").value = displaySiteUrl(state.siteUrl);
-      if (!silent) {
-        setStatus("Saved", "ready");
-        log("Saved.");
-      }
     }
 
-    function requireSettings() {
-      save({ silent: true });
+    function requireWebsite() {
+      saveSite();
       if (!state.siteUrl) throw new Error("Enter a website first.");
     }
 
@@ -417,58 +768,120 @@
     }
 
     function setBusy(isBusy) {
-      for (const id of ["connectBtn", "runBtn", "reportsBtn"]) {
+      for (const id of ["connectBtn", "runBtn", "reportsBtn", "demoBtn"]) {
         $(id).disabled = isBusy;
       }
     }
 
-    function renderLinks(links = {}) {
-      const labels = {
-        dashboard: "Open Dashboard",
-        gap_report: "Keyword Opportunities",
-        competitive_report: "Competitor Notes",
-        content_plan: "Content Plan"
-      };
-      $("links").innerHTML = Object.entries(links).map(([key, url]) =>
-        `<a class="link-button" href="${url}" target="_blank" rel="noreferrer">${labels[key] || key}</a>`
-      ).join("") || "<small>No reports yet.</small>";
+    function setSteps(activeIndex = -1, doneThrough = -1) {
+      $("steps").innerHTML = steps.map((label, index) => {
+        const className = index <= doneThrough ? "done" : (index === activeIndex ? "active" : "");
+        return `<div class="step ${className}">${escapeHtml(label)}</div>`;
+      }).join("");
     }
 
-    function renderResult(result) {
+    function renderLinks(links = {}, isDemo = false) {
+      const labels = {
+        dashboard: "Dashboard",
+        gap_report: "Keyword report",
+        competitive_report: "Competitor notes",
+        content_plan: "Content plan"
+      };
+      const entries = Object.entries(links);
+      if (entries.length) {
+        $("links").innerHTML = entries.map(([key, url]) =>
+          `<a class="link-button" href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${labels[key] || key}</a>`
+        ).join("");
+        return;
+      }
+
+      const demoLabels = ["Dashboard", "Keyword report", "Content plan"];
+      $("links").innerHTML = demoLabels.map((label) =>
+        `<span class="link-button disabled">${label}</span>`
+      ).join("") + `<div class="empty">${isDemo ? "Report files appear here after a real plan is generated." : "No report files yet."}</div>`;
+    }
+
+    function renderResult(result, mode = "real") {
+      const isDemo = mode === "demo" || result.demo;
       const gap = result.gap || {};
       const kpis = gap.kpis || {};
+      const keywords = gap.keywords || [];
+      const articles = ((result.content_plan || {}).articles || []);
+      const top = keywords[0];
+
+      $("reportMode").textContent = isDemo ? "Example" : "Live";
+      $("reportMode").className = `badge ${isDemo ? "green" : "amber"}`;
       $("runMeta").textContent = `${displaySiteUrl(result.site_url)} | ${result.date}`;
       $("mImpressions").textContent = Number(kpis.total_impressions || 0).toLocaleString();
       $("mGaps").textContent = Number(kpis.gap_zone_count || 0).toLocaleString();
       $("mPosition").textContent = kpis.avg_position || "-";
       $("mClicks").textContent = Number(kpis.total_clicks || 0).toLocaleString();
 
-      $("keywords").innerHTML = (gap.keywords || []).slice(0, 5).map((kw) => `
+      $("nextMove").innerHTML = top ? `
+        <h3>${escapeHtml(top.keyword)}</h3>
+        <p>${escapeHtml(top.recommendation)}</p>
+        <div class="impact-row">
+          <span class="chip">Impact: ${escapeHtml(top.impact || inferImpact(top))}</span>
+          <span class="chip">Effort: ${escapeHtml(top.effort || "Medium")}</span>
+          <span class="chip">Position: ${escapeHtml(top.position)}</span>
+        </div>
+      ` : `<div class="empty">Generate a plan to see the recommended next move.</div>`;
+
+      $("keywords").innerHTML = keywords.slice(0, 5).map((kw) => `
         <div class="item">
-          <h3>${escapeHtml(kw.keyword)}</h3>
-          <small>${kw.impressions.toLocaleString()} impressions | Position ${kw.position} | CTR ${kw.ctr}%</small>
+          <div class="item-top">
+            <h3>${escapeHtml(kw.keyword)}</h3>
+            <span class="badge ${badgeClass(kw.impact || inferImpact(kw))}">${escapeHtml(kw.impact || inferImpact(kw))}</span>
+          </div>
           <p>${escapeHtml(kw.recommendation)}</p>
+          <div class="impact-row">
+            <span class="chip">${Number(kw.impressions || 0).toLocaleString()} impressions</span>
+            <span class="chip">Position ${escapeHtml(kw.position)}</span>
+            <span class="chip">CTR ${escapeHtml(kw.ctr)}%</span>
+          </div>
         </div>
-      `).join("") || "<small>No gap-zone keywords found.</small>";
+      `).join("") || `<div class="empty">No opportunity queries found yet.</div>`;
 
-      $("contentPlan").innerHTML = ((result.content_plan || {}).articles || []).map((item) => `
+      $("contentPlan").innerHTML = articles.map((item) => `
         <div class="item">
-          <h3>${escapeHtml(item.priority)} - ${escapeHtml(item.title)}</h3>
-          <small>${escapeHtml(item.keyword)} | ${escapeHtml(item.intent)} | ${escapeHtml(item.threat)}</small>
+          <div class="item-top">
+            <h3>${escapeHtml(item.title)}</h3>
+            <span class="badge ${item.priority === "P1" ? "amber" : ""}">${escapeHtml(item.priority)}</span>
+          </div>
           <p>${escapeHtml(item.brief)}</p>
+          <small>${escapeHtml(item.keyword)} | ${escapeHtml(item.intent)} | Competition: ${escapeHtml(item.threat)}</small>
         </div>
-      `).join("") || "<small>No content plan yet.</small>";
+      `).join("") || `<div class="empty">No content briefs yet.</div>`;
 
-      renderLinks(result.links);
+      renderLinks(result.links, isDemo);
+      setSteps(-1, isDemo ? 3 : 3);
+    }
+
+    function inferImpact(keyword) {
+      const impressions = Number(keyword.impressions || 0);
+      const position = Number(keyword.position || 0);
+      if (impressions >= 1000 && position <= 12) return "High";
+      if (impressions >= 400) return "Medium";
+      return "Low";
+    }
+
+    function badgeClass(value) {
+      if (String(value).toLowerCase() === "high") return "green";
+      if (String(value).toLowerCase() === "medium") return "amber";
+      return "";
     }
 
     function renderReports(data) {
-      $("reports").innerHTML = (data.reports || []).slice(0, 12).map((report) => `
+      const reports = data.reports || [];
+      $("reports").innerHTML = reports.slice(0, 12).map((report) => `
         <div class="item">
-          <a href="${report.url}" target="_blank" rel="noreferrer">${escapeHtml(formatReportName(report.key))}</a>
-          <p>${new Date(report.last_modified).toLocaleString()} | ${Number(report.size).toLocaleString()} bytes</p>
+          <div class="item-top">
+            <a href="${escapeAttr(report.url)}" target="_blank" rel="noreferrer">${escapeHtml(formatReportName(report.key))}</a>
+            <span class="badge">${Number(report.size).toLocaleString()} bytes</span>
+          </div>
+          <p>${new Date(report.last_modified).toLocaleString()}</p>
         </div>
-      `).join("") || "<small>No reports found.</small>";
+      `).join("") || `<div class="empty">No saved reports yet.</div>`;
     }
 
     function formatReportName(key) {
@@ -477,6 +890,27 @@
         .replace(/\.[^.]+$/, "")
         .replace(/[-_]+/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function renderHistory() {
+      if (!state.history.length && !state.lastResult) {
+        $("history").innerHTML = `<div class="history-entry"><strong>Now</strong> Example report loaded.</div>`;
+        return;
+      }
+      $("history").innerHTML = state.history.map((entry) =>
+        `<div class="history-entry"><strong>${escapeHtml(entry.stamp)}</strong> ${escapeHtml(entry.message)}</div>`
+      ).join("") || `<div class="empty">No activity yet.</div>`;
+    }
+
+    function friendlyError(error) {
+      const message = String(error.message || error);
+      if (message.includes("website")) return "Enter a website first.";
+      if (message.includes("Google") || message.includes("credentials")) {
+        return "Search Console needs to be connected before a live plan can run.";
+      }
+      if (message.includes("SSM parameter")) return "Search Console is not configured for this deployment yet.";
+      if (message.includes("Invalid or missing admin token")) return "The service is not ready. Please try again later.";
+      return message;
     }
 
     function escapeHtml(value) {
@@ -489,35 +923,49 @@
       }[char]));
     }
 
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, "&#96;");
+    }
+
+    $("demoBtn").addEventListener("click", () => {
+      renderResult(demoResult, "demo");
+      setStatus("Example loaded", "ready");
+      addHistory("Example report loaded.");
+    });
+
     $("connectBtn").addEventListener("click", () => {
       try {
-        requireSettings();
+        requireWebsite();
         const url = `/api/connect?site_url=${encodeURIComponent(state.siteUrl)}`;
         window.open(url, "_blank", "noopener,noreferrer");
         setStatus("Connection opened", "ready");
-        log("Opened account connection in a new tab.");
+        addHistory("Search Console connection opened in a new tab.");
+        setSteps(0, -1);
       } catch (error) {
-        setStatus("Setup needed", "error");
-        log(error.message);
+        setStatus("Website needed", "error");
+        addHistory(friendlyError(error), "error");
       }
     });
 
     $("runBtn").addEventListener("click", async () => {
       try {
-        requireSettings();
+        requireWebsite();
         setBusy(true);
         setStatus("Generating...");
-        log("Generating SEO plan. This can take a few minutes.");
+        setSteps(1, 0);
+        addHistory("Generating plan for " + displaySiteUrl(state.siteUrl) + ".");
         const data = await api("/api/run", {
           method: "POST",
           body: JSON.stringify({ site_url: state.siteUrl })
         });
-        renderResult(data);
+        setSteps(2, 1);
+        renderResult(data, "real");
+        localStorage.setItem("seoAgent.lastResult", JSON.stringify(data));
         setStatus("Plan ready", "ready");
-        log("SEO plan generated.");
+        addHistory("Plan generated for " + displaySiteUrl(data.site_url) + ".");
       } catch (error) {
-        setStatus(error.message.includes("website") ? "Website needed" : "Plan failed", "error");
-        log(error.message);
+        setStatus(error.message.includes("website") ? "Website needed" : "Needs attention", "error");
+        addHistory(friendlyError(error), "error");
       } finally {
         setBusy(false);
       }
@@ -526,23 +974,23 @@
     $("reportsBtn").addEventListener("click", async () => {
       try {
         setBusy(true);
+        setStatus("Loading...");
         const data = await api("/api/reports");
         renderReports(data);
         setStatus("Reports loaded", "ready");
-        log("Latest reports loaded.");
+        addHistory("Saved reports refreshed.");
       } catch (error) {
         setStatus("Reports unavailable", "error");
-        log(error.message);
+        addHistory(friendlyError(error), "error");
       } finally {
         setBusy(false);
       }
     });
 
-    renderLinks();
+    renderHistory();
     renderReports({ reports: [] });
-    $("keywords").innerHTML = "<small>No opportunities yet.</small>";
-    $("contentPlan").innerHTML = "<small>No content plan yet.</small>";
-    setStatus("Ready", "ready");
+    renderResult(state.lastResult || demoResult, state.lastResult ? "real" : "demo");
+    setStatus(state.lastResult ? "Plan loaded" : "Example loaded", "ready");
   </script>
 </body>
 </html>
