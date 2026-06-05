@@ -1,0 +1,43 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile Python sources
+        run: |
+          python -m py_compile scripts/*.py
+          python -m py_compile codex-skill/seo-intelligence/scripts/*.py
+          python -m py_compile serverless/lambda/app.py
+
+      - name: Validate shell scripts
+        run: bash -n serverless/scripts/*.sh
+
+      - name: Parse public HTML
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          parser = HTMLParser()
+          parser.feed(Path("public/index.html").read_text())
+          print("public/index.html parsed")
+          PY
+
+      - name: Check CloudFormation template presence
+        run: test -s serverless/infra/template.yaml
+
+      - name: Check whitespace
+        run: git diff --check
