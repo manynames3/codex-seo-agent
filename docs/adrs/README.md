@@ -4,11 +4,11 @@
 
 **Status:** Accepted
 
-**Context:** The project needs a hosted way to run a low-volume SEO workflow from a browser without paying for always-on compute.
+**Context:** The project needs a hosted way to run a low-volume SEO workflow from a browser without paying for always-on compute or exposing backend secrets in browser JavaScript.
 
-**Decision:** Use AWS Lambda with a Function URL for the backend API.
+**Decision:** Use AWS Lambda with a Function URL for the backend API, called by a Cloudflare Pages Function proxy.
 
-**Consequences:** There is no idle compute cost and the deployment remains small. The backend must finish within Lambda limits and app-level authorization must be implemented carefully.
+**Consequences:** There is no idle compute cost and the deployment remains small. The backend must finish within Lambda limits, and the Pages Function secrets must stay in sync with the backend token.
 
 ## ADR 002 - Store Single-Operator Secrets In SSM SecureString
 

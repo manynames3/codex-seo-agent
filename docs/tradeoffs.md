@@ -4,7 +4,7 @@
 
 **Why:** lower cost and less infrastructure for a single-operator tool.
 
-**Tradeoff:** fewer built-in API management features. The app handles bearer-token authorization itself.
+**Tradeoff:** fewer built-in API management features. The Cloudflare Pages Function proxy injects the bearer token server-side, but this is still not a full API gateway.
 
 ## SSM Parameter Store Instead Of Secrets Manager
 
@@ -24,11 +24,11 @@
 
 **Tradeoff:** less modular and less ergonomic than Terraform or CDK for a larger platform.
 
-## Public Function URL With App Token Instead Of Cognito
+## Pages Function Proxy Instead Of Cognito
 
 **Why:** cheap and fast for a single operator.
 
-**Tradeoff:** not a full user-management or SSO model. Cognito or Cloudflare Access would be better for teams.
+**Tradeoff:** backend details stay out of the UI, but this is not a full user-management or SSO model. Cognito or Cloudflare Access would be better for teams.
 
 ## Mock SERP Fallback
 

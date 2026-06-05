@@ -3,12 +3,10 @@
 ## Normal Operation
 
 1. Open https://codex-seo-agent.pages.dev.
-2. Paste the Lambda Function URL.
-3. Paste the admin token from `.local/aws-admin-token.txt`.
-4. Enter a Search Console property, for example `sc-domain:example.com`.
-5. Connect Google if no token has been stored yet.
-6. Run the workflow.
-7. Open generated report links returned by the UI.
+2. Enter a website, for example `example.com`.
+3. Connect Search Console if no token has been stored yet.
+4. Generate the plan.
+5. Open generated report links returned by the UI.
 
 ## Health Checks
 
@@ -29,7 +27,7 @@ curl -H "Authorization: Bearer $TOKEN" https://YOUR_FUNCTION_URL/api/reports
 |---|---|---|
 | `Missing SSM parameter: /codex-seo-agent/google-client-secret-json` | Google OAuth web client has not been stored | Run `serverless/scripts/set-google-client-secret.sh` |
 | `Stored Google credentials are invalid` | OAuth token expired or was revoked | Re-run Connect Google |
-| `Invalid or missing admin token` | Wrong token in UI | Re-copy `.local/aws-admin-token.txt` |
+| `Invalid or missing admin token` | Cloudflare Pages secret does not match the Lambda admin token | Update `BACKEND_ADMIN_TOKEN` in Cloudflare Pages |
 | Competitors are `mock-competitor-*` | DataForSEO is not configured | Store optional DataForSEO SSM params |
 | Lambda timeout | Workflow took more than 15 minutes | Split into async jobs or move long part to container worker |
 

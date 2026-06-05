@@ -107,6 +107,13 @@ The admin token is saved locally at:
 .local/aws-admin-token.txt
 ```
 
+Store the backend URL and admin token as Cloudflare Pages secrets so the website can call the backend without showing those details to users:
+
+```bash
+printf '%s' 'https://YOUR_FUNCTION_URL' | npx wrangler pages secret put BACKEND_URL --project-name codex-seo-agent
+npx wrangler pages secret put BACKEND_ADMIN_TOKEN --project-name codex-seo-agent < .local/aws-admin-token.txt
+```
+
 Create a Google OAuth **Web application** client in Google Cloud Console, then add the Lambda callback URL as an authorized redirect URI:
 
 ```text
@@ -119,13 +126,7 @@ Store the downloaded Google web client JSON:
 ./serverless/scripts/set-google-client-secret.sh /path/to/google-web-client-secret.json
 ```
 
-Open the Cloudflare Pages site, paste:
-
-- Lambda Function URL
-- Admin token
-- Search Console property, for example `sc-domain:example.com`
-
-Then click **Connect Google**, finish OAuth, and run the workflow.
+Open the Cloudflare Pages site, enter a website such as `example.com`, connect Search Console, and generate the plan.
 
 For DataForSEO in Lambda, store optional credentials:
 

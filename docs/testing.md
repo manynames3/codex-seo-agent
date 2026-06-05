@@ -11,6 +11,7 @@ python3 -m py_compile scripts/*.py
 python3 -m py_compile codex-skill/seo-intelligence/scripts/*.py
 python3 -m py_compile serverless/lambda/app.py
 bash -n serverless/scripts/*.sh
+node --check 'functions/api/[[path]].js'
 python3 - <<'PY'
 from html.parser import HTMLParser
 from pathlib import Path
@@ -36,6 +37,7 @@ curl -H "Authorization: Bearer $TOKEN" https://YOUR_FUNCTION_URL/api/reports
 
 - Python compilation for local scripts, bundled skill scripts, and Lambda handler.
 - Shell syntax validation for deploy scripts.
+- JavaScript syntax validation for the Cloudflare Pages Function proxy.
 - Static HTML parser check for `public/index.html`.
 - CloudFormation template file presence.
 - `git diff --check`.

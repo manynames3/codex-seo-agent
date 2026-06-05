@@ -1,6 +1,6 @@
 # Codex SEO Agent
 
-A production-style AWS/cloud work sample for running a low-volume SEO intelligence workflow from Google Search Console data. The project includes a Cloudflare Pages control panel, an AWS Lambda Function URL backend, private S3 report storage, SSM SecureString secret handling, CloudFormation infrastructure, validation CI, and operational documentation.
+A production-style AWS/cloud work sample for running a low-volume SEO intelligence workflow from Google Search Console data. The project includes a Cloudflare Pages UI with a same-origin Pages Function proxy, an AWS Lambda Function URL backend, private S3 report storage, SSM SecureString secret handling, CloudFormation infrastructure, validation CI, and operational documentation.
 
 **Positioning:** Serverless SEO workflow runner showing cost-aware cloud architecture, deployment discipline, security boundaries, observability tradeoffs, and teardown ownership.
 
@@ -8,7 +8,7 @@ Live demo: https://codex-seo-agent.pages.dev
 
 Source: https://github.com/manynames3/codex-seo-agent
 
-The live UI is real, but running reports requires an admin token and a Google OAuth Web client configured by the operator. No screenshot asset is committed; use the live demo for visual inspection.
+The live UI is real, but running reports requires backend secrets and a Google OAuth Web client configured by the operator. No screenshot asset is committed; use the live demo for visual inspection.
 
 ## Problem
 
@@ -18,7 +18,7 @@ The upstream SEO workflow was useful as a local automation, but not credible as 
 
 This repo keeps the local Codex workflow while adding a cheap hosted path:
 
-- Cloudflare Pages serves a static control panel from `public/`.
+- Cloudflare Pages serves the UI from `public/` and a same-origin API proxy from `functions/`.
 - AWS Lambda runs the SEO workflow through a Function URL.
 - SSM Parameter Store stores admin and OAuth secrets as SecureString values.
 - S3 stores generated JSON, Markdown, and HTML reports.
@@ -33,7 +33,7 @@ The project demonstrates how to package a practical automation as an operated cl
 
 | Layer | Technology |
 |---|---|
-| Frontend | Static HTML/CSS/JS on Cloudflare Pages |
+| Frontend | Static HTML/CSS/JS plus Pages Functions on Cloudflare Pages |
 | Backend | AWS Lambda Function URL, Python 3.12 |
 | Infrastructure | CloudFormation |
 | Secrets | SSM Parameter Store SecureString |
@@ -47,7 +47,7 @@ The project demonstrates how to package a practical automation as an operated cl
 - Low-idle-cost design: Lambda + S3 + SSM instead of always-on containers.
 - Manual Lambda deploy gate while frontend auto-deploys from GitHub.
 - Least-privilege-style IAM scoped to one S3 bucket and named SSM parameters.
-- Public Function URL with app-level bearer token and documented limitations.
+- Cloudflare Pages Function keeps the Lambda URL and backend bearer token out of browser JavaScript.
 - Private S3 reports with presigned links returned to the UI.
 - Clear teardown path for CloudFormation, S3 artifacts, SSM parameters, and Cloudflare Pages.
 - Honest fallback behavior when DataForSEO is not configured.
@@ -59,7 +59,7 @@ Read [docs/architecture.md](docs/architecture.md) for the C4-style diagram, runt
 Short version:
 
 ```text
-Browser -> Cloudflare Pages UI -> AWS Lambda Function URL
+Browser -> Cloudflare Pages UI -> Cloudflare Pages Function proxy -> AWS Lambda Function URL
 Lambda -> Google Search Console API
 Lambda -> optional DataForSEO API
 Lambda -> SSM SecureString for secrets
@@ -72,7 +72,7 @@ Lambda -> S3 for generated reports
 |---|---|
 | IaC | CloudFormation template in `serverless/infra/template.yaml`; validated with AWS CLI |
 | CI/CD | GitHub Actions validation in `.github/workflows/validate.yml`; Cloudflare Pages Git integration for frontend |
-| Security | SSM SecureString secrets, scoped Lambda IAM role, private S3 bucket, app-level bearer token; see `docs/security.md` |
+| Security | SSM SecureString secrets, Cloudflare Pages secrets, scoped Lambda IAM role, private S3 bucket, app-level bearer token; see `docs/security.md` |
 | Reliability | Runbook, failure modes, rollback/recovery notes, manual backend deploy gate; see `docs/runbook.md` |
 | Observability | CloudWatch Logs, frontend error surfacing, CloudFormation/Pages deployment history; gaps documented in `docs/observability.md` |
 | Cost | Lambda/S3/SSM low-idle architecture, no Fargate/API Gateway/NAT Gateway; see `docs/cost-model.md` |
@@ -120,6 +120,13 @@ Backend deploys to AWS:
 ./serverless/scripts/deploy-lambda.sh
 ```
 
+Configure the Pages Function proxy with the backend URL and generated access key:
+
+```bash
+printf '%s' 'https://YOUR_FUNCTION_URL' | npx wrangler pages secret put BACKEND_URL --project-name codex-seo-agent
+npx wrangler pages secret put BACKEND_ADMIN_TOKEN --project-name codex-seo-agent < .local/aws-admin-token.txt
+```
+
 Create a Google OAuth **Web application** client and add:
 
 ```text
@@ -156,11 +163,11 @@ curl -H "Authorization: Bearer $TOKEN" https://YOUR_FUNCTION_URL/api/reports
 
 ## Security Summary
 
-- Admin token is generated locally and stored in SSM SecureString.
+- Admin token is generated locally, stored in SSM SecureString, and mirrored into a Cloudflare Pages secret for the server-side proxy.
 - Google OAuth client and token JSON are stored in SSM SecureString.
 - S3 report bucket blocks public access.
 - Lambda IAM role is scoped to required S3 and SSM resources.
-- Function URL is public but protected by app-level bearer token.
+- Function URL is public but protected by an app-level bearer token that browser users do not see.
 
 This is a single-operator model, not a complete multi-user SaaS auth system. See [docs/security.md](docs/security.md).
 
@@ -190,7 +197,8 @@ Teardown covers the CloudFormation stack, S3 buckets/objects, SSM parameters, Cl
 ## Project Structure
 
 ```text
-public/                    Cloudflare Pages control panel
+public/                    Cloudflare Pages user interface
+functions/                 Cloudflare Pages Function proxy
 serverless/lambda/         Lambda backend source and requirements
 serverless/infra/          CloudFormation template
 serverless/scripts/        Backend deploy and secret setup scripts

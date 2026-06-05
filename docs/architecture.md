@@ -1,6 +1,6 @@
 # Architecture
 
-Codex SEO Agent is a low-volume SEO workflow runner. The public frontend is a static Cloudflare Pages control panel. The hosted backend is an AWS Lambda Function URL that runs a Google Search Console workflow, writes report artifacts to S3, and stores OAuth/admin secrets in SSM Parameter Store.
+Codex SEO Agent is a low-volume SEO workflow runner. The public frontend is a Cloudflare Pages UI with a same-origin Pages Function proxy. The hosted backend is an AWS Lambda Function URL that runs a Google Search Console workflow, writes report artifacts to S3, and stores OAuth/admin secrets in SSM Parameter Store.
 
 ## Container Diagram
 
@@ -13,7 +13,7 @@ C4Container
     System_Ext(github, "GitHub", "Source repository and Cloudflare Pages trigger")
 
     System_Boundary(cloudflare, "Cloudflare") {
-      Container(pages, "Cloudflare Pages", "Static HTML/CSS/JS", "Control panel UI served from public/index.html")
+      Container(pages, "Cloudflare Pages", "Static UI + Pages Function", "User interface plus same-origin proxy")
     }
 
     System_Boundary(aws, "AWS") {
@@ -25,7 +25,7 @@ C4Container
     }
 
     Rel(operator, pages, "Uses browser UI")
-    Rel(pages, lambda, "Calls Function URL with bearer admin token")
+    Rel(pages, lambda, "Server-side proxy calls Function URL with bearer token")
     Rel(lambda, ssm, "Reads/writes SecureString parameters")
     Rel(lambda, gsc, "Fetches Search Console data with OAuth token")
     Rel(lambda, dataforseo, "Optionally fetches live SERP data")
@@ -38,15 +38,17 @@ C4Container
 ## Runtime Flow
 
 1. The operator opens the Cloudflare Pages UI.
-2. The operator enters the Lambda Function URL, admin token, and Search Console property.
-3. `Connect Google` starts Google OAuth through `/auth/google/start`.
-4. Google redirects back to `/auth/google/callback`; Lambda stores the OAuth token JSON in SSM SecureString.
-5. `Run Workflow` calls `/api/run` with the admin token.
-6. Lambda fetches Search Console data, identifies ranking gaps, optionally calls DataForSEO, creates a content plan, writes reports to S3, and returns summary JSON plus presigned report links.
+2. The operator enters a website or Search Console property.
+3. `Connect Search Console` calls the same-origin Pages Function route `/api/connect`.
+4. The Pages Function forwards to Lambda with the backend access key stored in Cloudflare Pages secrets.
+5. Google redirects back to `/auth/google/callback`; Lambda stores the OAuth token JSON in SSM SecureString.
+6. `Generate Plan` calls `/api/run` through the Pages Function proxy.
+7. Lambda fetches Search Console data, identifies ranking gaps, optionally calls DataForSEO, creates a content plan, writes reports to S3, and returns summary JSON plus presigned report links.
 
 ## Deployment Shape
 
 - Frontend: Cloudflare Pages, Git-integrated with the GitHub `main` branch.
+- Frontend proxy: Cloudflare Pages Function in `functions/api/[[path]].js`.
 - Backend: CloudFormation stack `codex-seo-agent-lambda`.
 - Artifact packaging: `serverless/scripts/deploy-lambda.sh` builds a Lambda zip in `.local/`, uploads it to an artifact bucket, stores an admin token in SSM, and deploys CloudFormation.
 - Reports: private S3 bucket created by CloudFormation.
@@ -55,6 +57,7 @@ C4Container
 
 - Lambda runs outside a VPC to avoid NAT Gateway cost and complexity.
 - Lambda Function URL is public with app-level bearer-token authorization.
+- Cloudflare Pages Function is the browser-facing API surface and injects the bearer token server-side.
 - The IAM role is scoped to the reports bucket and named SSM parameters.
 - S3 public access is blocked.
 
@@ -62,19 +65,19 @@ C4Container
 
 - Search Console query data enters Lambda from Google APIs.
 - Report JSON/Markdown/HTML is written to S3 under date-based prefixes.
-- The frontend receives summary JSON and time-limited presigned links.
-- Admin token and OAuth tokens are not committed to Git and are stored outside the frontend.
+- The frontend receives summary JSON and time-limited presigned links through the Pages Function proxy.
+- Admin token and OAuth tokens are not committed to Git and are not exposed in browser JavaScript.
 
 ## Auth Flow
 
-- App access uses a single admin bearer token stored in SSM and pasted into the browser UI.
+- App access uses a single backend bearer token stored in SSM and Cloudflare Pages secrets.
 - Google Search Console access uses OAuth Web application flow.
 - The OAuth callback URL is the Lambda Function URL path `/auth/google/callback`.
 
 ## CI/CD Flow
 
 - GitHub `main` pushes trigger Cloudflare Pages for the static frontend.
-- GitHub Actions validate Python syntax, shell syntax, static HTML parsing, CloudFormation template presence, and whitespace.
+- GitHub Actions validate Python syntax, shell syntax, Pages Function syntax, static HTML parsing, CloudFormation template presence, and whitespace.
 - Lambda deployment is manual via `serverless/scripts/deploy-lambda.sh`; this is intentional to avoid accidental cloud changes from public repo pushes.
 
 ## Key Constraints

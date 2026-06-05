@@ -26,6 +26,9 @@ jobs:
       - name: Validate shell scripts
         run: bash -n serverless/scripts/*.sh
 
+      - name: Validate Pages Function
+        run: node --check 'functions/api/[[path]].js'
+
       - name: Parse public HTML
         run: |
           python - <<'PY'

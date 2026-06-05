@@ -5,4 +5,5 @@ token.pickle
 .venv/
 venv/
 .local/
+.wrangler/
 __pycache__/

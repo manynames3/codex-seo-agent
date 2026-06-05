@@ -2,11 +2,12 @@
 
 ## Frontend
 
-The frontend is a static control panel in `public/index.html`.
+The frontend is a user-facing interface in `public/index.html` plus a same-origin Pages Function proxy in `functions/api/[[path]].js`.
 
 - Hosted on Cloudflare Pages.
 - Git-integrated with the public GitHub repository.
 - Pushes to `main` trigger frontend deployment.
+- Pages secrets provide the backend URL and backend access key to the proxy.
 
 Manual deploy command if needed:
 
@@ -32,6 +33,13 @@ The script:
 6. Deploys `serverless/infra/template.yaml`.
 7. Prints CloudFormation outputs.
 
+After the backend exists, configure the Cloudflare Pages Function proxy:
+
+```bash
+printf '%s' 'https://YOUR_FUNCTION_URL' | npx wrangler pages secret put BACKEND_URL --project-name codex-seo-agent
+npx wrangler pages secret put BACKEND_ADMIN_TOKEN --project-name codex-seo-agent < .local/aws-admin-token.txt
+```
+
 ## Google OAuth Setup
 
 Create a Google OAuth Web application client. Add:
@@ -53,6 +61,7 @@ Store the downloaded JSON:
 - Frontend deploys automatically from GitHub.
 - Backend deployment is explicit and local because it mutates AWS resources and writes secrets.
 - CloudFormation is the source of truth for backend infrastructure.
+- Cloudflare Pages secrets are required for the browser UI to run reports without exposing backend details.
 
 ## Validation Before Deploy
 
