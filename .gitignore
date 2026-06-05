@@ -4,3 +4,5 @@ client_secret_*.json
 token.pickle
 .venv/
 venv/
+.local/
+__pycache__/

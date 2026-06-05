@@ -106,3 +106,14 @@ For "Run the full weekly workflow":
 Every script writes a human-readable report and a machine-readable JSON file under `reports/`.
 
 Use concise consultant-style summaries. Explain what changed, why it matters, and what to do next. Avoid generic SEO advice when the report includes specific keyword, position, CTR, threat, or content-plan data.
+
+## Hosted Lambda Backend
+
+For a cheap hosted version, use the files under `serverless/`.
+
+- `serverless/lambda/app.py` is the Lambda Function URL backend.
+- `serverless/infra/template.yaml` is the CloudFormation stack.
+- `serverless/scripts/deploy-lambda.sh` builds dependencies, uploads the Lambda zip, creates the stack, and saves the admin token to `.local/aws-admin-token.txt`.
+- `serverless/scripts/set-google-client-secret.sh` stores the Google OAuth Web client JSON in SSM Parameter Store.
+
+The hosted backend intentionally uses Lambda Function URL + S3 + SSM instead of API Gateway, Fargate, or Secrets Manager to keep low-volume cost down.

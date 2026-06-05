@@ -30,10 +30,37 @@ Generated reports land in `reports/`; article drafts land in `drafts/`.
 
 ## Cloudflare Pages
 
-The deployable static front end lives in `public/`.
+The deployable static front end lives in `public/`. It can be used as either a project front end or a control panel for the Lambda backend.
 
 ```bash
 wrangler pages deploy public --project-name codex-seo-agent --branch main
 ```
 
-The deployed page is a static project front door. Google Search Console analysis runs locally in Codex so OAuth credentials stay out of Cloudflare Pages.
+## Cheap Hosted Backend
+
+The low-volume hosted backend lives in `serverless/`. It uses:
+
+- Lambda Function URL for the API
+- S3 for generated reports
+- SSM Parameter Store SecureString parameters for admin token and Google OAuth secrets
+- CloudWatch Logs through the Lambda basic execution role
+
+Deploy it with:
+
+```bash
+./serverless/scripts/deploy-lambda.sh
+```
+
+Then create a Google OAuth Web application client and add the Lambda callback URL:
+
+```text
+https://YOUR_FUNCTION_URL/auth/google/callback
+```
+
+Store that Google client JSON with:
+
+```bash
+./serverless/scripts/set-google-client-secret.sh /path/to/google-web-client-secret.json
+```
+
+Open the Pages site, paste the Lambda Function URL and the local admin token from `.local/aws-admin-token.txt`, then click **Connect Google**.

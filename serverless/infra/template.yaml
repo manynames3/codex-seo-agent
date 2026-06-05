@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Cheap Lambda backend for the Codex SEO Agent.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: codex-seo-agent
+  LambdaCodeBucket:
+    Type: String
+  LambdaCodeKey:
+    Type: String
+  AdminTokenParameterName:
+    Type: String
+    Default: /codex-seo-agent/admin-token
+  GoogleClientSecretParameterName:
+    Type: String
+    Default: /codex-seo-agent/google-client-secret-json
+  GoogleTokenParameterName:
+    Type: String
+    Default: /codex-seo-agent/google-token-json
+  DataForSeoLoginParameterName:
+    Type: String
+    Default: /codex-seo-agent/dataforseo-login
+  DataForSeoPasswordParameterName:
+    Type: String
+    Default: /codex-seo-agent/dataforseo-password
+
+Resources:
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  SeoAgentFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SeoAgentRuntimeAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt ReportsBucket.Arn
+                  - !Sub "${ReportsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:PutParameter
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${AdminTokenParameterName}"
+                  - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${GoogleClientSecretParameterName}"
+                  - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${GoogleTokenParameterName}"
+                  - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${DataForSeoLoginParameterName}"
+                  - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${DataForSeoPasswordParameterName}"
+
+  SeoAgentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-backend"
+      Runtime: python3.12
+      Handler: app.handler
+      Role: !GetAtt SeoAgentFunctionRole.Arn
+      Timeout: 900
+      MemorySize: 1024
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          PROJECT_NAME: !Ref ProjectName
+          REPORTS_BUCKET: !Ref ReportsBucket
+          ADMIN_TOKEN_PARAM: !Ref AdminTokenParameterName
+          GOOGLE_CLIENT_SECRET_PARAM: !Ref GoogleClientSecretParameterName
+          GOOGLE_TOKEN_PARAM: !Ref GoogleTokenParameterName
+          DATAFORSEO_LOGIN_PARAM: !Ref DataForSeoLoginParameterName
+          DATAFORSEO_PASSWORD_PARAM: !Ref DataForSeoPasswordParameterName
+
+  SeoAgentFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      AuthType: NONE
+      TargetFunctionArn: !Ref SeoAgentFunction
+      Cors:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+        AllowHeaders:
+          - authorization
+          - content-type
+        MaxAge: 300
+
+  SeoAgentFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunctionUrl
+      FunctionName: !Ref SeoAgentFunction
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+  SeoAgentFunctionInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SeoAgentFunction
+      Principal: "*"
+      InvokedViaFunctionUrl: true
+
+Outputs:
+  FunctionUrl:
+    Description: Browser/API base URL for the SEO Agent backend.
+    Value: !GetAtt SeoAgentFunctionUrl.FunctionUrl
+  ReportsBucket:
+    Description: Private bucket containing generated reports.
+    Value: !Ref ReportsBucket
+  AdminTokenParameterName:
+    Value: !Ref AdminTokenParameterName
+  GoogleClientSecretParameterName:
+    Value: !Ref GoogleClientSecretParameterName

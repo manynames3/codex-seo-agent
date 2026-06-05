@@ -83,3 +83,53 @@ DATAFORSEO_PASSWORD=yourpassword
 ```
 
 This unlocks live competitor SERP data. Without it, the competitor script uses mock fallback competitors, so those results should be treated as a workflow demo. Gap analysis and content planning still use Google Search Console impressions as a useful volume proxy.
+
+## Optional - Hosted Low-Cost Lambda Backend
+
+Use this when you want the deployed website to run the SEO workflow instead of running scripts locally.
+
+Deploy the backend:
+
+```bash
+./serverless/scripts/deploy-lambda.sh
+```
+
+The script creates:
+
+- Lambda Function URL API
+- Private S3 reports bucket
+- IAM role for Lambda
+- SSM SecureString admin token
+
+The admin token is saved locally at:
+
+```text
+.local/aws-admin-token.txt
+```
+
+Create a Google OAuth **Web application** client in Google Cloud Console, then add the Lambda callback URL as an authorized redirect URI:
+
+```text
+https://YOUR_FUNCTION_URL/auth/google/callback
+```
+
+Store the downloaded Google web client JSON:
+
+```bash
+./serverless/scripts/set-google-client-secret.sh /path/to/google-web-client-secret.json
+```
+
+Open the Cloudflare Pages site, paste:
+
+- Lambda Function URL
+- Admin token
+- Search Console property, for example `sc-domain:example.com`
+
+Then click **Connect Google**, finish OAuth, and run the workflow.
+
+For DataForSEO in Lambda, store optional credentials:
+
+```bash
+aws ssm put-parameter --name /codex-seo-agent/dataforseo-login --type SecureString --value "you@example.com" --overwrite
+aws ssm put-parameter --name /codex-seo-agent/dataforseo-password --type SecureString --value "password" --overwrite
+```

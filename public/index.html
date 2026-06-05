@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Codex SEO Agent</title>
-  <meta name="description" content="A Codex-ready SEO intelligence workflow for Google Search Console gap analysis, competitor research, content planning, and dashboard generation.">
+  <meta name="description" content="Run Google Search Console gap analysis, competitor intelligence, content planning, and dashboard generation from a low-cost Lambda backend.">
   <style>
     :root {
       color-scheme: dark;
@@ -32,17 +32,20 @@
     }
 
     main {
-      width: min(1120px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 32px 0 44px;
+      padding: 28px 0 40px;
     }
 
-    .topbar {
+    .topbar, .row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 14px 0 28px;
+      gap: 14px;
+    }
+
+    .topbar {
+      padding-bottom: 22px;
       border-bottom: 1px solid var(--line);
     }
 
@@ -50,8 +53,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      font-weight: 750;
     }
 
     .mark {
@@ -63,7 +65,7 @@
       background: #12314a;
       color: var(--blue);
       border: 1px solid #24567a;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font: 700 12px ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
     .status {
@@ -79,168 +81,212 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 14px rgba(77, 216, 153, 0.7);
+      background: var(--yellow);
+      box-shadow: 0 0 12px rgba(246, 200, 95, 0.65);
     }
 
-    .hero {
+    .status.ready::before { background: var(--green); box-shadow: 0 0 12px rgba(77, 216, 153, 0.65); }
+    .status.error::before { background: var(--red); box-shadow: 0 0 12px rgba(255, 107, 107, 0.65); }
+
+    .grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
-      gap: 28px;
-      padding: 40px 0 28px;
-      align-items: stretch;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 14px;
+      margin-top: 22px;
+      align-items: start;
     }
 
-    h1 {
-      margin: 0 0 14px;
-      max-width: 780px;
-      font-size: clamp(42px, 7vw, 82px);
-      line-height: 0.94;
-      letter-spacing: 0;
-    }
-
-    .lede {
-      max-width: 700px;
-      color: var(--muted);
-      font-size: 18px;
-      margin: 0;
-    }
-
-    .panel {
+    .panel, .card {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 20px;
+    }
+
+    .panel { padding: 18px; }
+    .card { padding: 16px; }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    p, small, label, .hint {
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      font: inherit;
+    }
+
+    input, textarea {
+      background: #081018;
+      color: var(--text);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 78px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #3f83ad;
+      box-shadow: 0 0 0 3px rgba(85, 184, 255, 0.12);
+    }
+
+    button {
+      cursor: pointer;
+      background: #1b6a9d;
+      color: white;
+      border-color: #2d8bc7;
+      padding: 11px 13px;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #152232;
+      border-color: #2b4055;
+      color: #d8e9f4;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
     }
 
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin: 18px 0 28px;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
     .metric {
-      background: var(--panel);
+      background: #0d141d;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 16px;
-      min-height: 112px;
+      padding: 13px;
+      min-height: 94px;
     }
 
-    .metric span, .eyebrow {
+    .metric span {
       display: block;
       color: var(--muted);
-      font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+      font: 10px ui-monospace, SFMono-Regular, Menlo, monospace;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .metric strong {
       display: block;
-      font: 600 28px ui-monospace, SFMono-Regular, Menlo, monospace;
+      font: 650 24px ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
-    .metric small {
-      display: block;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    .workflow {
+    .list {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
 
-    .step {
-      background: var(--panel);
+    .item {
+      background: #0d141d;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 18px;
-      min-height: 190px;
+      padding: 13px;
     }
 
-    .step b {
-      display: inline-flex;
-      width: 28px;
-      height: 28px;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      background: var(--panel-2);
-      color: var(--blue);
-      margin-bottom: 18px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .step h2 {
-      margin: 0 0 8px;
-      font-size: 17px;
-      letter-spacing: 0;
-    }
-
-    .step p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .terminal {
-      margin-top: 16px;
-      background: #080b0f;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      overflow: auto;
-      color: #cde7f7;
-      font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .stack {
-      display: grid;
-      gap: 12px;
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .row:last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
-    }
-
-    .pill {
-      flex: none;
-      border-radius: 999px;
-      padding: 4px 10px;
-      background: #182433;
-      color: var(--blue);
-      font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
-      border: 1px solid #284760;
-    }
-
-    footer {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
+    .item p {
+      margin: 6px 0 0;
       font-size: 13px;
     }
 
-    @media (max-width: 900px) {
-      .hero, .metric-grid, .workflow {
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .link-button {
+      display: inline-flex;
+      border: 1px solid #284760;
+      background: #122235;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    pre {
+      margin: 0;
+      max-height: 280px;
+      overflow: auto;
+      background: #080b0f;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      color: #cde7f7;
+      font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 980px) {
+      .grid, .cards, .metric-grid {
         grid-template-columns: 1fr;
       }
 
-      .topbar {
+      .topbar, .row {
         align-items: flex-start;
         flex-direction: column;
       }
@@ -252,90 +298,282 @@
     <header class="topbar">
       <div class="brand">
         <div class="mark">SEO</div>
-        <span>Codex SEO Agent</span>
+        <div>
+          <h1>Codex SEO Agent</h1>
+          <small>Low-volume Lambda runner for Google Search Console SEO workflows</small>
+        </div>
       </div>
-      <div class="status">Static Pages front end</div>
+      <div id="status" class="status">Not connected</div>
     </header>
 
-    <section class="hero">
-      <div>
-        <span class="eyebrow">Google Search Console workflow</span>
-        <h1>SEO intelligence, packaged for Codex.</h1>
-        <p class="lede">Find gap-zone keywords, inspect who is outranking you, plan this week's articles, and export a dashboard from one Codex-guided workflow.</p>
-      </div>
-      <aside class="panel stack">
-        <div class="row">
-          <span>Project instructions</span>
-          <span class="pill">AGENTS.md</span>
+    <section class="grid">
+      <aside class="panel">
+        <h2>Connection</h2>
+        <div class="field">
+          <label for="apiBase">AWS Lambda Function URL</label>
+          <input id="apiBase" placeholder="https://abc.lambda-url.us-east-1.on.aws">
         </div>
-        <div class="row">
-          <span>Reusable Codex skill</span>
-          <span class="pill">$seo-intelligence</span>
+        <div class="field">
+          <label for="adminToken">Admin token</label>
+          <input id="adminToken" type="password" placeholder="Stored locally in this browser">
         </div>
-        <div class="row">
-          <span>Dashboard output</span>
-          <span class="pill">HTML</span>
+        <div class="field">
+          <label for="siteUrl">Search Console property</label>
+          <input id="siteUrl" placeholder="sc-domain:example.com">
         </div>
+        <div class="actions">
+          <button id="saveBtn" class="secondary">Save</button>
+          <button id="healthBtn" class="secondary">Test API</button>
+        </div>
+
+        <h2 style="margin-top:22px">Run</h2>
+        <div class="actions">
+          <button id="connectBtn" class="secondary">Connect Google</button>
+          <button id="runBtn">Run Workflow</button>
+        </div>
+        <p class="hint">Google OAuth opens in a new tab. After it says connected, return here and run the workflow.</p>
+
+        <h2 style="margin-top:22px">Output Links</h2>
+        <div id="links" class="links"></div>
       </aside>
-    </section>
 
-    <section class="metric-grid" aria-label="Workflow metrics">
-      <div class="metric">
-        <span>Gap Zone</span>
-        <strong>5-20</strong>
-        <small>Positions targeted for quick movement.</small>
-      </div>
-      <div class="metric">
-        <span>Data Window</span>
-        <strong>90d</strong>
-        <small>Search Console query data.</small>
-      </div>
-      <div class="metric">
-        <span>Plan Size</span>
-        <strong>4</strong>
-        <small>Weekly article opportunities.</small>
-      </div>
-      <div class="metric">
-        <span>Deploy Target</span>
-        <strong>Pages</strong>
-        <small>Static Cloudflare front end.</small>
-      </div>
-    </section>
+      <section class="cards">
+        <div class="panel wide">
+          <div class="row">
+            <div>
+              <h2>Dashboard</h2>
+              <small id="runMeta">Run a workflow to populate this panel.</small>
+            </div>
+            <button id="reportsBtn" class="secondary" style="width:auto">Refresh Reports</button>
+          </div>
+          <div class="metric-grid" style="margin-top:14px">
+            <div class="metric"><span>Impressions</span><strong id="mImpressions">-</strong></div>
+            <div class="metric"><span>Gap Keywords</span><strong id="mGaps">-</strong></div>
+            <div class="metric"><span>Avg Position</span><strong id="mPosition">-</strong></div>
+            <div class="metric"><span>Clicks</span><strong id="mClicks">-</strong></div>
+          </div>
+        </div>
 
-    <section class="workflow" aria-label="SEO workflow">
-      <article class="step">
-        <b>1</b>
-        <h2>Gap analysis</h2>
-        <p>Pull Search Console queries and prioritize keywords ranking in striking distance.</p>
-      </article>
-      <article class="step">
-        <b>2</b>
-        <h2>Competitor intel</h2>
-        <p>Use live SERP data when configured, or run the mock fallback for workflow demos.</p>
-      </article>
-      <article class="step">
-        <b>3</b>
-        <h2>Content plan</h2>
-        <p>Score opportunities against impressions, position, threat level, and brand voice.</p>
-      </article>
-      <article class="step">
-        <b>4</b>
-        <h2>Dashboard</h2>
-        <p>Generate static HTML reports ready for browser review or Pages deployment.</p>
-      </article>
-    </section>
+        <div class="card">
+          <h2>Top Opportunities</h2>
+          <div id="keywords" class="list"></div>
+        </div>
 
-    <section class="panel" style="margin-top: 12px">
-      <span class="eyebrow">Run locally</span>
-      <div class="terminal">python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-cp .env.example .env
-.venv/bin/python scripts/gap_finder.py</div>
-    </section>
+        <div class="card">
+          <h2>Content Plan</h2>
+          <div id="contentPlan" class="list"></div>
+        </div>
 
-    <footer>
-      This deployed page is the static front end. The Google Search Console workflow runs locally in Codex so credentials stay out of the deployed site.
-    </footer>
+        <div class="card wide">
+          <h2>Recent Reports</h2>
+          <div id="reports" class="list"></div>
+        </div>
+
+        <div class="card wide">
+          <h2>Log</h2>
+          <pre id="log">Ready.</pre>
+        </div>
+      </section>
+    </section>
   </main>
+
+  <script>
+    const DEFAULT_API_BASE = "https://lihky6ckg3kc74ql6pw7mbfgby0fyign.lambda-url.us-east-1.on.aws";
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      apiBase: localStorage.getItem("seoAgent.apiBase") || DEFAULT_API_BASE,
+      adminToken: localStorage.getItem("seoAgent.adminToken") || "",
+      siteUrl: localStorage.getItem("seoAgent.siteUrl") || ""
+    };
+
+    $("apiBase").value = state.apiBase;
+    $("adminToken").value = state.adminToken;
+    $("siteUrl").value = state.siteUrl;
+
+    function setStatus(text, kind = "") {
+      const el = $("status");
+      el.textContent = text;
+      el.className = `status ${kind}`;
+    }
+
+    function log(message, data) {
+      const stamp = new Date().toLocaleTimeString();
+      const details = data ? `\n${JSON.stringify(data, null, 2)}` : "";
+      $("log").textContent = `[${stamp}] ${message}${details}\n\n${$("log").textContent}`;
+    }
+
+    function save() {
+      state.apiBase = $("apiBase").value.trim().replace(/\/$/, "");
+      state.adminToken = $("adminToken").value.trim();
+      state.siteUrl = $("siteUrl").value.trim();
+      localStorage.setItem("seoAgent.apiBase", state.apiBase);
+      localStorage.setItem("seoAgent.adminToken", state.adminToken);
+      localStorage.setItem("seoAgent.siteUrl", state.siteUrl);
+      setStatus("Saved locally", "ready");
+      log("Settings saved in local browser storage.");
+    }
+
+    function requireSettings() {
+      save();
+      if (!state.apiBase) throw new Error("Add the Lambda Function URL.");
+      if (!state.adminToken) throw new Error("Add the admin token.");
+      if (!state.siteUrl) throw new Error("Add a Search Console property.");
+    }
+
+    async function api(path, options = {}) {
+      if (!state.apiBase) throw new Error("Missing API URL.");
+      const res = await fetch(`${state.apiBase}${path}`, {
+        ...options,
+        headers: {
+          "content-type": "application/json",
+          "authorization": `Bearer ${state.adminToken}`,
+          ...(options.headers || {})
+        }
+      });
+      const text = await res.text();
+      let body;
+      try { body = JSON.parse(text); } catch { body = text; }
+      if (!res.ok) {
+        throw new Error(typeof body === "string" ? body : (body.error || `HTTP ${res.status}`));
+      }
+      return body;
+    }
+
+    function setBusy(isBusy) {
+      for (const id of ["saveBtn", "healthBtn", "connectBtn", "runBtn", "reportsBtn"]) {
+        $(id).disabled = isBusy;
+      }
+    }
+
+    function renderLinks(links = {}) {
+      const labels = {
+        dashboard: "Dashboard HTML",
+        gap_report: "Gap Report",
+        competitive_report: "Competitive Report",
+        content_plan: "Content Plan"
+      };
+      $("links").innerHTML = Object.entries(links).map(([key, url]) =>
+        `<a class="link-button" href="${url}" target="_blank" rel="noreferrer">${labels[key] || key}</a>`
+      ).join("") || "<small>No report links yet.</small>";
+    }
+
+    function renderResult(result) {
+      const gap = result.gap || {};
+      const kpis = gap.kpis || {};
+      $("runMeta").textContent = `${result.site_url} | ${result.date}`;
+      $("mImpressions").textContent = Number(kpis.total_impressions || 0).toLocaleString();
+      $("mGaps").textContent = Number(kpis.gap_zone_count || 0).toLocaleString();
+      $("mPosition").textContent = kpis.avg_position || "-";
+      $("mClicks").textContent = Number(kpis.total_clicks || 0).toLocaleString();
+
+      $("keywords").innerHTML = (gap.keywords || []).slice(0, 5).map((kw) => `
+        <div class="item">
+          <h3>${escapeHtml(kw.keyword)}</h3>
+          <small>${kw.impressions.toLocaleString()} impressions | Position ${kw.position} | CTR ${kw.ctr}%</small>
+          <p>${escapeHtml(kw.recommendation)}</p>
+        </div>
+      `).join("") || "<small>No gap-zone keywords found.</small>";
+
+      $("contentPlan").innerHTML = ((result.content_plan || {}).articles || []).map((item) => `
+        <div class="item">
+          <h3>${escapeHtml(item.priority)} - ${escapeHtml(item.title)}</h3>
+          <small>${escapeHtml(item.keyword)} | ${escapeHtml(item.intent)} | ${escapeHtml(item.threat)}</small>
+          <p>${escapeHtml(item.brief)}</p>
+        </div>
+      `).join("") || "<small>No content plan yet.</small>";
+
+      renderLinks(result.links);
+    }
+
+    function renderReports(data) {
+      $("reports").innerHTML = (data.reports || []).slice(0, 12).map((report) => `
+        <div class="item">
+          <a href="${report.url}" target="_blank" rel="noreferrer">${escapeHtml(report.key)}</a>
+          <p>${new Date(report.last_modified).toLocaleString()} | ${Number(report.size).toLocaleString()} bytes</p>
+        </div>
+      `).join("") || "<small>No reports found.</small>";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    $("saveBtn").addEventListener("click", save);
+
+    $("healthBtn").addEventListener("click", async () => {
+      try {
+        save();
+        setBusy(true);
+        setStatus("Testing API...");
+        const data = await fetch(`${state.apiBase}/health`).then((res) => res.json());
+        setStatus("API reachable", "ready");
+        log("API health check succeeded.", data);
+      } catch (error) {
+        setStatus("API error", "error");
+        log(error.message);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    $("connectBtn").addEventListener("click", () => {
+      try {
+        requireSettings();
+        const url = `${state.apiBase}/auth/google/start?token=${encodeURIComponent(state.adminToken)}&site_url=${encodeURIComponent(state.siteUrl)}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+        log("Opened Google OAuth flow in a new tab.");
+      } catch (error) {
+        setStatus("Missing settings", "error");
+        log(error.message);
+      }
+    });
+
+    $("runBtn").addEventListener("click", async () => {
+      try {
+        requireSettings();
+        setBusy(true);
+        setStatus("Running workflow...");
+        log("Started SEO workflow. This can take a few minutes.");
+        const data = await api("/api/run", {
+          method: "POST",
+          body: JSON.stringify({ site_url: state.siteUrl })
+        });
+        renderResult(data);
+        setStatus("Workflow complete", "ready");
+        log("Workflow complete.", { date: data.date, site_url: data.site_url, outputs: data.outputs });
+      } catch (error) {
+        setStatus("Run failed", "error");
+        log(error.message);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    $("reportsBtn").addEventListener("click", async () => {
+      try {
+        requireSettings();
+        setBusy(true);
+        const data = await api("/api/reports");
+        renderReports(data);
+        setStatus("Reports refreshed", "ready");
+        log("Reports refreshed.");
+      } catch (error) {
+        setStatus("Reports failed", "error");
+        log(error.message);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    if (state.apiBase) {
+      setStatus("Settings loaded", "ready");
+    }
+  </script>
 </body>
 </html>
